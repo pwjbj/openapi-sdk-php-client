@@ -23,6 +23,10 @@
       "name": "Alibaba Cloud SDK",
       "email": "sdk-team@alibabacloud.com",
       "homepage": "http://www.alibabacloud.com"
+    },
+    {
+      "name" : "pwjbj",
+      "homepage" : "https://github.com/pwjbj/openapi-sdk-php-client"
     }
   ],
   "require": {
