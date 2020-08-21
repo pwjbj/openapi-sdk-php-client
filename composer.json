@@ -15,8 +15,8 @@
   "type": "library",
   "license": "Apache-2.0",
   "support": {
-    "source": "https://github.com/aliyun/openapi-sdk-php-client",
-    "issues": "https://github.com/aliyun/openapi-sdk-php-client/issues"
+    "source": "https://github.com/pwjbj/openapi-sdk-php-client",
+    "issues": "https://github.com/pwjbj/openapi-sdk-php-client/issues"
   },
   "authors": [
     {
