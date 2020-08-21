@@ -31,6 +31,9 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ResponseInterface;
+use Hyperf\Utils\Coroutine;
+use Hyperf\Guzzle\PoolHandler;
+use Hyperf\Guzzle\RetryMiddleware;
 
 /**
  * Class Request
@@ -369,11 +372,21 @@ abstract class Request implements ArrayAccess
      */
     public static function createClient(Request $request = null)
     {
-        if (AlibabaCloud::hasMock()) {
+        /*if (AlibabaCloud::hasMock()) {
             $stack = HandlerStack::create(AlibabaCloud::getMock());
         } else {
             $stack = HandlerStack::create();
+        }*/
+        $alibaba_client = config('alibaba_client');
+        $handler = null;
+        if (Coroutine::inCoroutine()) {
+            $handler = make(PoolHandler::class, [
+                'option' => [
+                    $alibaba_client['option'],
+                ],
+            ]);
         }
+        $stack = HandlerStack::create($handler);
 
         if (AlibabaCloud::isRememberHistory()) {
             $stack->push(Middleware::history(AlibabaCloud::referenceHistory()));
@@ -385,6 +398,8 @@ abstract class Request implements ArrayAccess
                 new MessageFormatter(AlibabaCloud::getLogFormat())
             ));
         }
+        $retry = make(RetryMiddleware::class,$alibaba_client['retry']);
+        $stack->push($retry->getMiddleware(), 'retry');
 
         $stack->push(Middleware::mapResponse(static function (ResponseInterface $response) use ($request) {
             return new Result($response, $request);
@@ -392,7 +407,12 @@ abstract class Request implements ArrayAccess
 
         self::$config['handler'] = $stack;
 
-        return new Client(self::$config);
+        return make(Client::class, [
+            'config' => self::$config
+        ]);
+
+//        self::$config['handler'] = $stack;
+//        return new Client(self::$config);
     }
 
     /**
